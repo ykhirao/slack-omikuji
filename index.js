@@ -1,56 +1,34 @@
 ;(async () => {
   require('dotenv').config()
 
-  let groups
   const { App } = require('@slack/bolt')
   const app = new App({
     token: process.env.SLACK_BOT_TOKEN,
     signingSecret: process.env.SLACK_SIGNING_SECRET
   })
 
-  async function getGroups() {
-    const result = await app.client.usergroups
-      .list({
-        token: process.env.SLACK_USER_TOKEN,
-        include_users: true
-      })
-      .catch(error => console.log(error))
-    if (!result.ok) {
-      console.log(`OK FALSE: ${result.error}`)
-      return []
-    }
-
-    const groups = await result.usergroups.map(group => {
-      return {
-        id: group.id,
-        name: group.handle,
-        users: group.users,
-        count: group.user_count
-      }
+  async function getUsersInAGroup(groupId) {
+    const result = await app.client.usergroups.users.list({
+      token: process.env.SLACK_USER_TOKEN,
+      usergroup: groupId
     })
 
-    return groups
+    return result.users
   }
 
-  async function getUser(user) {
-    const names = await Promise.all(
-      users.map(async user => {
-        const result = await app.client.users
-          .info({
-            token: process.env.SLACK_USER_TOKEN,
-            user: user
-          })
-          .catch(error => console.log(error))
-        if (!result || !result.ok) {
-          console.log(`OK FALSE`)
-          return undefined
-        }
+  async function getRandomUserName(users) {
+    const user = users[Math.floor(Math.random() * users.length)]
 
-        return result.user.name
-      })
-    )
+    const result = await app.client.users.info({
+      token: process.env.SLACK_USER_TOKEN,
+      user
+    })
 
-    return names.filter(i => !!i)
+    return result.user.name
+  }
+
+  async function getGroupId(payload) {
+    return payload.text.replace('<!subteam^', '').split('|@')[0]
   }
 
   /*
@@ -58,28 +36,25 @@
    */
   app.command('/omikuji', async ({ ack, payload, say }) => {
     ack()
-    console.log('/omikuji is 🔥')
 
-    groups = await getGroups()
-    console.log('⚡️ Get groups!')
-
-    console.log(payload)
-    // <!subteam^SSCPK9SV8|@sample-test>
-    let groupId
-    try {
-      groupId = payload.text.replace('<!subteam^', '').split('|@')[0]
-    } catch (e) {
-      // say('グループメンションが読み取れない。')
+    const groupId = await getGroupId(payload).catch(() => {
+      say('グループメンションが読み取れない。Why?')
       return
-    }
-
-    users = groups.find(g => {
-      return g.id === groupId
     })
 
-    console.log(users)
+    const users = await getUsersInAGroup(groupId).catch(() => {
+      say('GroupからUsers取れなかった。')
+      return
+    })
 
-    console.log('finish!!!')
+    const name = await getRandomUserName(users).catch(() => {
+      say('User1名さま選べなかったよ。ごめんな。')
+      return
+    })
+
+    say(name)
+
+    console.log('Finish!!')
   })
 
   await app.start(process.env.PORT || 3000)
