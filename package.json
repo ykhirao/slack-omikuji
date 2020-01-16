@@ -1,0 +1,23 @@
+{
+  "name": "slack-omikuji",
+  "version": "1.0.0",
+  "description": "SlackAPIを使ってメンバーのおみくじを引く",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ykhirao/slack-omikuji.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ykhirao/slack-omikuji/issues"
+  },
+  "homepage": "https://github.com/ykhirao/slack-omikuji#readme",
+  "dependencies": {
+    "@slack/bolt": "^1.5.0"
+  }
+}
