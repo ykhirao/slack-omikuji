@@ -1,70 +1,87 @@
-require('dotenv').config()
-template = require('./template').template
+;(async () => {
+  require('dotenv').config()
 
-const { App } = require('@slack/bolt')
-const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET
-})
-
-async function getGroups() {
-  const result = await app.client.users
-    .info({
-      token: process.env.SLACK_USER_TOKEN,
-      include_users: true
-    })
-    .catch(error => console.log(error))
-  if (!result.ok) {
-    console.log(`OK FALSE: ${result.error}`)
-    return []
-  }
-
-  const groups = result.usergroups.map(group => {
-    return {
-      id: group.id,
-      name: group.handle,
-      users: group.users,
-      count: group.user_count
-    }
+  let groups
+  const { App } = require('@slack/bolt')
+  const app = new App({
+    token: process.env.SLACK_BOT_TOKEN,
+    signingSecret: process.env.SLACK_SIGNING_SECRET
   })
 
-  return groups
-}
+  async function getGroups() {
+    const result = await app.client.usergroups
+      .list({
+        token: process.env.SLACK_USER_TOKEN,
+        include_users: true
+      })
+      .catch(error => console.log(error))
+    if (!result.ok) {
+      console.log(`OK FALSE: ${result.error}`)
+      return []
+    }
 
-async function getUsers(users) {
-  const names = await Promise.all(
-    users.map(async user => {
-      const result = await app.client.users
-        .info({
-          token: process.env.SLACK_USER_TOKEN,
-          user: user
-        })
-        .catch(error => console.log(error))
-      if (!result || !result.ok) {
-        console.log(`OK FALSE`)
-        return undefined
+    const groups = await result.usergroups.map(group => {
+      return {
+        id: group.id,
+        name: group.handle,
+        users: group.users,
+        count: group.user_count
       }
-
-      return result.user.name
     })
-  )
 
-  return names.filter(i => !!i)
-}
+    return groups
+  }
 
-app.command('/omikuji', async ({ command, ack, say }) => {
-  ack()
+  async function getUser(user) {
+    const names = await Promise.all(
+      users.map(async user => {
+        const result = await app.client.users
+          .info({
+            token: process.env.SLACK_USER_TOKEN,
+            user: user
+          })
+          .catch(error => console.log(error))
+        if (!result || !result.ok) {
+          console.log(`OK FALSE`)
+          return undefined
+        }
 
-  // const groups = await getGroups()
-  // console.log(groups)
-  // const i = getUsers().then(data => console.log(data))
+        return result.user.name
+      })
+    )
 
-  // say('test')
-  console.log('finish!!!')
-})
-;(async () => {
-  // Start your app
+    return names.filter(i => !!i)
+  }
+
+  /*
+   * payload { text: "<!subteam^SSCPK9SV8|@sample-test>"}
+   */
+  app.command('/omikuji', async ({ ack, payload, say }) => {
+    ack()
+    console.log('/omikuji is 🔥')
+
+    groups = await getGroups()
+    console.log('⚡️ Get groups!')
+
+    console.log(payload)
+    // <!subteam^SSCPK9SV8|@sample-test>
+    let groupId
+    try {
+      groupId = payload.text.replace('<!subteam^', '').split('|@')[0]
+    } catch (e) {
+      // say('グループメンションが読み取れない。')
+      return
+    }
+
+    users = groups.find(g => {
+      return g.id === groupId
+    })
+
+    console.log(users)
+
+    console.log('finish!!!')
+  })
+
   await app.start(process.env.PORT || 3000)
-
   console.log('⚡️ Bolt app is running!')
 })()
