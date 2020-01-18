@@ -1,4 +1,4 @@
-;(async () => {
+module.exports = (async (req, res) => {
   require('dotenv').config()
 
   const { App } = require('@slack/bolt')
@@ -36,23 +36,25 @@
    */
   app.command('/omikuji', async ({ ack, payload, say }) => {
     ack()
+    say('リクエスト受け付けたよ！')
 
-    const groupId = await getGroupId(payload).catch(() => {
-      say('グループメンションが読み取れない。Why?')
-      return
-    })
+    try {
+      const groupId = await getGroupId(payload).catch(() => {
+        throw 'グループメンションが読み取れない。Why?'
+      })
 
-    const users = await getUsersInAGroup(groupId).catch(() => {
-      say('GroupからUsers取れなかった。')
-      return
-    })
+      const users = await getUsersInAGroup(groupId).catch(() => {
+        throw 'GroupからUsers取れなかった。'
+      })
 
-    const name = await getRandomUserName(users).catch(() => {
-      say('User1名さま選べなかったよ。ごめんな。')
-      return
-    })
+      const name = await getRandomUserName(users).catch(() => {
+        throw 'User1名さま選べなかったよ。ごめんな。'
+      })
 
-    say(name)
+      say(name)
+    } catch (e) {
+      say(e.message)
+    }
 
     console.log('Finish!!')
   })

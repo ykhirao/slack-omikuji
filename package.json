@@ -4,7 +4,7 @@
   "description": "SlackAPIを使ってメンバーのおみくじを引く",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "now dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
