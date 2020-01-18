@@ -1,23 +1,18 @@
 {
-  "name": "slack-omikuji",
+  "name": "now-sh",
   "version": "1.0.0",
-  "description": "SlackAPIを使ってメンバーのおみくじを引く",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "now dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "now dev"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ykhirao/slack-omikuji.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ykhirao/slack-omikuji/issues"
-  },
-  "homepage": "https://github.com/ykhirao/slack-omikuji#readme",
+  "author": "Yuki Hirao <yuki.dees39th@gmail.com> (https://github.com/ykhirao)",
+  "license": "MIT",
   "dependencies": {
     "@slack/bolt": "^1.5.0",
     "dotenv": "^8.2.0"
