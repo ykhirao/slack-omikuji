@@ -1,4 +1,4 @@
-;(async () => {
+module.exports = (async (req, res) => {
   require('dotenv').config()
 
   const { App } = require('@slack/bolt')
@@ -30,6 +30,10 @@
   async function getGroupId(payload) {
     return payload.text.replace('<!subteam^', '').split('|@')[0]
   }
+
+  app.command('/chooseyou', async ({ ack, payload, say }) => {
+    say('ok')
+  })
 
   /*
    * payload { text: "<!subteam^SSCPK9SV8|@sample-test>"}
